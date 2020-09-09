@@ -1,16 +1,22 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
+<style>
+css_file
+</style>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Media Server</title>
 </head>
 <body>
-	<h1 style="margin: 20px auto; width: max-content;">Media Server</h1>
-	<form action="/add">
+	<h1>Media Server</h1>
+	<form method="post" action="/">
 		<label for="video">Video URL:</label>
-		<input type="url" id="video" name="video">
-		<input style="margin: 10px; float: right;" type="submit" value="Add to playlist">
+		<input type="url" id="video" name="video" required>
+		<input type="submit" value="Add to playlist">
 	</form>
+	<ol>
+		video_list
+	</ol>
 </body>
 </html>
