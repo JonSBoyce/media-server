@@ -31,19 +31,19 @@ li details {
 	display: inline-block;
 	width: calc(100% - 80px - 30px);
 	text-align: left;
+	vertical-align: top;
 }
 
 li details form {
 	margin-top: 10px;
 }
 
-li a {
-	display: inline-block;
+li summary {
 	overflow: hidden;
-	vertical-align: bottom;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	width: calc(100% - 30px);
+	width: 100%;
+	outline: none;
 }
 
 li form {
