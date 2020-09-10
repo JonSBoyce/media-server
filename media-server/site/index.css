@@ -5,9 +5,53 @@ body {
 h1 {
 	margin: auto;
 	width: max-content;
+	padding-bottom: 20px;
 }
 
-input[type=submit] {
-	margin: 10px;
-	float: right;
+input[type=url] {
+	width: calc(100% - 20px);
+	margin-bottom: 10px;
+}
+
+body > form {
+	text-align: right;
+}
+
+ol {
+	list-style: none;
+	padding: 0;
+}
+
+li {
+	text-align: right;
+	margin-bottom: 20px;
+}
+
+li details {
+	display: inline-block;
+	width: calc(100% - 80px - 30px);
+	text-align: left;
+}
+
+li details form {
+	margin-top: 10px;
+}
+
+li a {
+	display: inline-block;
+	overflow: hidden;
+	vertical-align: bottom;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	width: calc(100% - 30px);
+}
+
+li form {
+	display: inline-block;
+	margin-left: 10px;
+}
+
+li input {
+	padding: 10px 0 10px 0;
+	width: 80px;
 }

@@ -1,1 +1,15 @@
-<li><a href="video_url">video_name</a></li>
+<li>
+	<details>
+		<summary>
+			<a href="video_url">video_name</a>
+		</summary>
+		<form action="/" method="post">
+			<input type="url" name="play_video" value="video_url" hidden>
+			<input type="submit" value="Play">
+		</form>
+	</details>
+	<form action="/" method="post">
+		<input type="url" name="remove_video" value="video_url" hidden>
+		<input type="submit" value="Remove">
+	</form>
+</li>

@@ -5,6 +5,7 @@ use std::collections::HashSet;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::prelude::*;
+use std::process::Command;
 
 #[derive(Clone, Hash, Eq, Serialize, Deserialize)]
 struct Video {
@@ -51,13 +52,47 @@ fn write_playlist(playlist: HashSet<Video>) {
     file.write_all(playlist_json.as_bytes()).unwrap();
 }
 
-async fn add_video(form_data: String) -> impl Responder {
+async fn dispatch_action(form_data: String) -> impl Responder {
     let mut data = parse(form_data.as_bytes()).into_owned();
-    let video = Video { url: data.next().unwrap().1 };
-    let mut playlist = read_playlist();
-    playlist.insert(video);
-    write_playlist(playlist);
+    let item = data.next().unwrap();
+    match item.0.as_str() {
+        "add_video" => add_video(item.1),
+        "remove_video" => remove_video(item.1),
+        "play_video" => play_video(item.1),
+        _ => (),
+    };
     index().await
+}
+
+fn add_video(video: String) {
+    let mut playlist = read_playlist();
+    playlist.insert(Video { url: video });
+    write_playlist(playlist);
+}
+
+fn remove_video(video: String) {
+    let mut playlist = read_playlist();
+    playlist.remove(&Video { url: video });
+    write_playlist(playlist);
+}
+
+fn play_video(video: String) {
+    Command::new("sh")
+        .arg("-c")
+        .arg("killall -9 vlc").status().unwrap();
+    if video.starts_with("https://www.youtube.com/") {
+        Command::new("vlc")
+            .arg(video)
+            .arg("--fullscreen").status().unwrap();
+    } else if video.starts_with("https://www.twitch.tv/") {
+        Command::new("streamlink")
+            .arg("--player")
+            .arg("vlc --fullscreen")
+            .arg("--player-passthrough")
+            .arg("hls")
+            .arg(video)
+            .arg("best").status().unwrap();
+    }
 }
 
 #[actix_rt::main]
@@ -66,13 +101,13 @@ async fn main() -> std::io::Result<()> {
     let mut server = HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(index))
-            .route("/", web::post().to(add_video))
+            .route("/", web::post().to(dispatch_action))
     });
 
     server = if let Some(l) = listenfd.take_tcp_listener(0).unwrap() {
         server.listen(l)?
     } else {
-        server.bind("127.0.0.1:3000")?
+        server.bind(("0.0.0.0", 3000))?
     };
 
     server.run().await
