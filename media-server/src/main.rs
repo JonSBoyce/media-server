@@ -22,12 +22,17 @@ async fn index() -> impl Responder {
     let html = include_str!("../site/index.html");
     let css = include_str!("../site/index.css");
     let playlist = read_playlist();
-    let mut video_list = String::new();
+    let mut video_urls = Vec::new();
     for video in playlist {
+        video_urls.push(video.url);
+    }
+    video_urls.sort();
+    let mut video_list = String::new();
+    for url in video_urls {
         let video_part = include_str!("../site/partials/video.html");
         video_list.push_str(&video_part
-            .replace("video_url", &video.url)
-            .replace("video_name", &video.url));
+            .replace("video_url", &url)
+            .replace("video_name", &url));
     }
     HttpResponse::Ok().body(html
         .replace("css_file", css)
@@ -58,7 +63,11 @@ async fn dispatch_action(form_data: String) -> impl Responder {
     match item.0.as_str() {
         "add_video" => add_video(item.1),
         "remove_video" => remove_video(item.1),
-        "play_video" => play_video(item.1),
+        "play_video" => play_video(
+            item.1,
+            data.next().unwrap().1,
+            data.next().unwrap().1,
+            data.next().unwrap().1),
         _ => (),
     };
     index().await
@@ -76,22 +85,25 @@ fn remove_video(video: String) {
     write_playlist(playlist);
 }
 
-fn play_video(video: String) {
+fn play_video(video: String, hour: String, minute: String, second: String) {
     Command::new("sh")
         .arg("-c")
         .arg("killall -9 vlc").status().unwrap();
+    Command::new("sh")
+        .arg("-c")
+        .arg("killall -9 streamlink").status().unwrap();
     if video.starts_with("https://www.youtube.com/") {
         Command::new("vlc")
             .arg(video)
-            .arg("--fullscreen").status().unwrap();
+            .arg("--fullscreen")
+            .spawn().unwrap();
     } else if video.starts_with("https://www.twitch.tv/") {
         Command::new("streamlink")
-            .arg("--player")
-            .arg("vlc --fullscreen")
-            .arg("--player-passthrough")
-            .arg("hls")
             .arg(video)
-            .arg("best").status().unwrap();
+            .arg("best")
+            .arg("--hls-start-offset")
+            .arg(format!("{}:{}:{}", hour, minute, second))
+            .spawn().unwrap();
     }
 }
 
